@@ -38,7 +38,6 @@
 #check String
 #check Nat → String
 
-
 /-
   Tip: You can hover over unicode symbols to see how to input them.
   For example `→` is typed `\to`.
@@ -67,6 +66,7 @@ def plus5'' (n) := n + 5
   We can evaluate a function with `#eval`.
 -/
 #eval plus5 8
+#eval hello "vlad"
 
 /-
   Lambda expressions (also known as lambda abstractions, anonymous functions, closures) are first-class objects in Lean.
@@ -125,6 +125,12 @@ def plus5'''' := Nat.add 5
 def sumOfSquares (numbers : List Nat) : Nat :=
   List.foldl (fun n m => n + m) 0 (List.map (fun n => n * n) numbers)
 
+#eval sumOfSquares [1,2,3]
+
+def sumOfSquares'' (numbers: List Nat) : Nat :=
+  List.foldl (fun n m => n + m^2) 0 numbers
+#eval sumOfSquares [1,2,3]
+
 /- There is also the `method` syntax, where instead of `List.map f numbers` we can write `numbers.map f`,
    (this is because `map` is in the `List` namespace)
 -/
@@ -135,7 +141,10 @@ def sumOfSquares' (numbers : List Nat) : Nat :=
   **Exercise**: write a function which computes the product of all non-zero
   numbers in a list.
 -/
-def prodNonZero (numbers : List Nat) : Nat := sorry
+def prodNonZero (numbers : List Nat) : Nat :=
+  (numbers.filter (fun n => n != 0)).foldl (fun n m => n * m) 1
+
+#eval prodNonZero [1,0,3,5,0,10]
 
 
 
@@ -166,7 +175,10 @@ def namesOfStudentsWhoPassed (students : List Student) : List String :=
     In Lean, you can always place an underscore where a term is expected,
     and the infoview will show you its expected type if you move the carret over it.
 -/
-def me : Student := sorry
+def me : Student :=
+  { name := "vlad", group := 232, grade := 2}
+
+#check Student.mk
 
 /-
   We can access the fields of structure using dot notations,
@@ -253,7 +265,12 @@ def nonterminating (n : Nat) : Nat :=
   **Exercise**:
     Using pattern matching, define the `factorial` function, computing the factorial of a natural number.
 -/
-def factorial (n : Nat) : Nat := sorry
+def factorial (n : Nat) : Nat :=
+  match n with
+  | 0 => 1
+  | n + 1 => (n + 1) * factorial n
+
+#eval factorial 5
 
 /-
   We can also prove theorems in Lean. This is not the subject of today's lab,
@@ -289,7 +306,9 @@ end Hidden
 -/
 
 
-def sub? (n m : Nat) : Option Nat := sorry
+def sub? (n m : Nat) : Option Nat := if n < m
+                                     then none
+                                     else some (n - m)
 
 -- sub? 5 3 = some 2
 -- sub? 2 7 = none
@@ -303,7 +322,13 @@ def sub? (n m : Nat) : Option Nat := sorry
 -/
 
 
-def myAdd (n m : Nat) : Nat := sorry
+def myAdd (n m : Nat) : Nat :=
+  match m with
+  | 0 => n
+  | succ m => succ (myAdd n m)
+
+#eval myAdd 3 4
+
 
 
 /-
@@ -322,7 +347,7 @@ example : myAdd 28 49 = 77 := rfl
 -- theorem zero_add : ∀ n : Nat, myAdd 0 n = n := fun n => rfl
 
 -- n + 0 = n
--- theorem add_zero : ∀ n : Nat, myAdd n 0 = n := fun n => rfl
+theorem add_zero : ∀ n : Nat, myAdd n 0 = n := fun n => rfl
 
 
 namespace Hidden
@@ -352,12 +377,20 @@ def List.myMap {α β : Type} (f : α → β) (as : List α) : List β :=
   | h :: t => (f h) :: (List.myMap f t)
 
 /- **Exercise**: define by recursion the `sum` function which computes the sum of a list -/
-def List.mySum (xs : List Nat) : Nat := sorry
+def List.mySum (xs : List Nat) : Nat :=
+  match xs with
+  | [] => 0
+  | h :: t => h + (List.mySum t)
+
+#eval List.mySum [1,2,3]
 
 /- **Exercise**: define by recursion the `filter` function from before -/
-def List.myFilter {α : Type} (p : α → Bool) (xs : List α) : List α := sorry
+def List.myFilter {α : Type} (p : α → Bool) (xs : List α) : List α :=
+  match xs with
+  | [] => []
+  | h :: t => if p h then (h :: (List.myFilter p t)) else List.myFilter p t
 
-
+#eval List.myFilter (fun x => x = 1) [1,2,3,1]
 
 /-
   Let's see a slightly more 'real-world' example of using `Option` combined with `List`.
@@ -603,4 +636,3 @@ def BTree.prettyPrint {α : Type} [ToString α] (indentLevel : Nat := 0) (tree :
 --   IO.println someRandomTree.prettyPrint
 
 -- #eval runPrintBTree
-
