@@ -603,3 +603,4 @@ def BTree.prettyPrint {α : Type} [ToString α] (indentLevel : Nat := 0) (tree :
 --   IO.println someRandomTree.prettyPrint
 
 -- #eval runPrintBTree
+
